@@ -1,21 +1,33 @@
 import 'dotenv/config';
 import express from 'express';
-import Anthropic from '@anthropic-ai/sdk';
 
 const app = express();
 app.use(express.json({ limit: '12mb' }));
 
-const client = new Anthropic(); // reads ANTHROPIC_API_KEY
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
-const img = (data) => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data } });
+const API_KEY = process.env.GEMINI_API_KEY;
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+const img = (data) => ({ inline_data: { mime_type: 'image/jpeg', data } });
 
 async function ask(prompt, images) {
-  const r = await client.messages.create({
-    model: MODEL,
-    max_tokens: 400,
-    messages: [{ role: 'user', content: [...images.map(img), { type: 'text', text: prompt }] }],
-  });
-  const text = r.content.filter((c) => c.type === 'text').map((c) => c.text).join('');
+  const call = () =>
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': API_KEY },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [...images.map(img), { text: prompt }] }],
+        // thinking tokens count towards this limit, so leave headroom
+        generationConfig: { maxOutputTokens: 2048, responseMimeType: 'application/json' },
+      }),
+    });
+  let r = await call();
+  // Gemini returns 503/429 when overloaded; retry a couple of times
+  for (let i = 0; i < 2 && (r.status === 503 || r.status === 429); i++) {
+    await new Promise((s) => setTimeout(s, 2000 * (i + 1)));
+    r = await call();
+  }
+  if (!r.ok) throw new Error(`Gemini ${r.status}: ${await r.text()}`);
+  const body = await r.json();
+  const text = (body.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
   return JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
 }
 

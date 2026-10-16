@@ -45,7 +45,7 @@ export default function Report({ addTask, addCrew, goBoard }) {
         <button className="b" onClick={check}>{busy ? 'Checking photo…' : 'Check my report'}</button>
         <p className="muted">{msg}</p>
       </div>
-      <p className="muted">Claude looks at your photo and checks it is a street problem before anything is sent.</p>
+      <p className="muted">AI looks at your photo and checks it is a street problem before anything is sent.</p>
     </div>
   );
 

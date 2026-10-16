@@ -6,7 +6,10 @@ export const RATE = {
 };
 
 // Hard safety block: any of these in the resident's note goes straight to the crew.
-export const HAZ = /needle|syringe|sharps|asbestos|chemical|oil|paint|gas|glass|road|pothole|drain|sewer|carriageway|dead animal|fire/i;
+// Whole words/phrases only, so street names like "Broad Street" or "Oldfield Road" don't trip it.
+// Ambiguous bare words (road, oil, gas, paint, glass, fire) are left to the vision check.
+export const HAZ =
+  /\b(?:needles?|syringes?|sharps|asbestos|chemicals?|potholes?|drains?|sewers?|carriageway|dead animals?|(?:on|in) the road|gas (?:cylinder|canister)s?|paint tins?|broken glass)\b/i;
 
 export const hash = (s) => {
   let x = 0;

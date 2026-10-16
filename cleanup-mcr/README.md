@@ -4,11 +4,11 @@ Snap a photo of a small local problem in Manchester. AI sorts it, the council fu
 
 ## How it works
 
-1. **Report**: resident uploads a photo and postcode. Claude describes the photo, sizes the issue, rates risk and picks a route: council crew, community task, or "unclear, send another photo".
+1. **Report**: resident uploads a photo and postcode. AI (Google Gemini) describes the photo, sizes the issue, rates risk and picks a route: council crew, community task, or "unclear, send another photo".
 2. **Confirm**: the resident sees a plain-English summary before anything is sent.
 3. **Task board**: community tasks show area, size, time estimate and a fixed fee from the rate card (`src/constants.js`).
 4. **Worker flow**: accept a task, do it, upload an after photo.
-5. **Before/after check**: Claude compares the photos and marks the job as likely complete. A council officer approves or rejects payment.
+5. **Before/after check**: AI compares the photos and marks the job as likely complete. A council officer approves or rejects payment.
 6. **Staff dashboard**: open, awaiting, done and rejected tasks, cost so far, and a hotspot map.
 7. **Safety rules**: hazards (needles, asbestos, chemicals, roads) are hard-blocked and sent to the crew, both by keyword in the note and by the vision check.
 
@@ -16,7 +16,7 @@ Snap a photo of a small local problem in Manchester. AI sorts it, the council fu
 
 ```bash
 npm install
-cp .env.example .env     # add your ANTHROPIC_API_KEY
+cp .env.example .env     # add your GEMINI_API_KEY (Google AI Studio)
 npm run dev              # Vite on :5173, API on :3001
 ```
 
@@ -25,7 +25,7 @@ Open http://localhost:5173. Without a key the photo check fails safe: reports ar
 ## Layout
 
 ```
-server/index.js          Express API: /api/triage, /api/compare (calls Claude, key stays server-side)
+server/index.js          Express API: /api/triage, /api/compare (calls Gemini, key stays server-side)
 src/api.js               client calls, image downscaling, mapping AI output to routes
 src/constants.js         rate card, hazard keywords, seed data
 src/components/          Report, Board, Worker, Staff
