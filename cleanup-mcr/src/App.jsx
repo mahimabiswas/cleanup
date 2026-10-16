@@ -8,7 +8,7 @@ import Staff from './components/Staff.jsx';
 const TABS = [
   ['report', 'Report a problem'],
   ['board', 'Task board'],
-  ['worker', 'My job'],
+  ['worker', 'My jobs'],
   ['staff', 'Council dashboard'],
 ];
 
@@ -18,22 +18,32 @@ export default function App() {
   const [crew, setCrew] = useState([{ id: 90, kind: 'Pothole', area: 'M14 5XY' }]);
   const [job, setJob] = useState(null);
   const [n, setN] = useState(10);
+  const [menu, setMenu] = useState(false); // mobile menu open/closed
 
   const patch = (id, p) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...p } : t)));
   const goBoard = () => setTab('board');
 
   return (
     <div>
-      <header>
-        <h1>CleanUP MCR</h1>
-        <p>Spot a small problem on your Manchester street and snap it. The council funds the fix and a local resident gets paid a fixed fee to do it.</p>
-        <nav role="tablist">
-          {TABS.map(([k, l]) => (
-            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
-          ))}
-        </nav>
+      <header className="topbar">
+        <div className="topbar-in">
+          <div className="logo"><span className="logo-dot" aria-hidden="true" />CleanUp Salford</div>
+          <button className="menu-btn" aria-expanded={menu} aria-controls="mainnav" onClick={() => setMenu(!menu)}>
+            {menu ? 'Close' : 'Menu'}
+          </button>
+          <nav id="mainnav" aria-label="Main" className={menu ? 'open' : undefined}>
+            <ul>
+              {TABS.map(([k, l]) => (
+                <li key={k}>
+                  <button className="navlink" aria-current={tab === k ? 'page' : undefined} onClick={() => { setTab(k); setMenu(false); }}>{l}</button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </header>
-      <main>
+      {/* the dashboard gets a wider column */}
+      <main className={tab === 'staff' ? 'wide' : undefined}>
         {tab === 'report' && (
           <Report
             goBoard={goBoard}

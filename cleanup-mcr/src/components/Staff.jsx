@@ -1,4 +1,5 @@
 import { RATE, hash } from '../constants.js';
+import Pill from './Pill.jsx';
 
 export default function Staff({ tasks, crew, setStatus }) {
   const count = (s) => tasks.filter((t) => t.status === s).length;
@@ -13,37 +14,45 @@ export default function Staff({ tasks, crew, setStatus }) {
 
   return (
     <div>
+      <h1>Council dashboard</h1>
       <div className="stats">
-        {stats.map(([l, v]) => <div className="stat" key={l}><b>{v}</b>{l}</div>)}
+        {stats.map(([l, v]) => <div className="stat" key={l}><b>{v}</b><span>{l}</span></div>)}
       </div>
 
       <h2>Waiting for approval</h2>
       {review.length ? review.map((t) => (
         <div className="card" key={t.id}>
-          <b>{t.job}</b> · {t.area} · £{RATE[t.size].fee}
-          <div className="row">
-            {t.before && <div><span className="muted">Before</span><img className="ph" src={t.before} alt="Before" /></div>}
-            <div><span className="muted">After</span><img className="ph" src={t.after} alt="After" /></div>
+          <div className="job-head">
+            <h3>{t.job}</h3>
+            <Pill status="review" />
+          </div>
+          <p className="muted">{t.area} · £{RATE[t.size].fee}</p>
+          {/* before and after side by side, stacked on mobile */}
+          <div className="photos">
+            {t.before && <figure><img className="ph" src={t.before} alt="Before" /><figcaption className="muted">Before</figcaption></figure>}
+            <figure><img className="ph" src={t.after} alt="After" /><figcaption className="muted">After</figcaption></figure>
           </div>
           <p>
-            <span className={'tag ' + (t.ai.likely ? 'grn' : 'red')}>{t.ai.likely ? 'Likely complete' : 'Not clearly fixed'}</span>
+            <Pill status={t.ai.likely ? 'done' : 'rejected'}>{t.ai.likely ? 'Likely complete' : 'Not clearly fixed'}</Pill>{' '}
             AI confidence {t.ai.conf}%
           </p>
           <p className="muted">{t.ai.note}</p>
-          <button className="b" onClick={() => setStatus(t.id, 'done')}>Approve and pay</button>
-          <button className="b no" onClick={() => setStatus(t.id, 'rejected')}>Reject</button>
+          <div className="actions">
+            <button className="b" onClick={() => setStatus(t.id, 'done')}>Approve and pay</button>
+            <button className="b no" onClick={() => setStatus(t.id, 'rejected')}>Reject</button>
+          </div>
         </div>
       )) : <div className="card muted">Nothing to review.</div>}
 
       <h2>Hotspots</h2>
       <div className="card scroll">
         <svg viewBox="0 0 600 270" width="100%" role="img" aria-label="Manchester hotspot map by postcode">
-          <rect width="600" height="270" rx="10" fill="var(--bg)" stroke="var(--ln)" />
+          <rect width="600" height="270" rx="12" fill="var(--bg)" stroke="var(--line)" />
           {Object.entries(pts).map(([ar, n]) => {
             const x = 40 + (hash(ar) % 520), y = 30 + ((hash(ar) >> 8) % 220);
             return (
               <g key={ar}>
-                <circle cx={x} cy={y} r={8 + n * 5} fill="var(--red)" fillOpacity=".45" stroke="var(--red)" />
+                <circle cx={x} cy={y} r={8 + n * 5} fill="var(--brand)" fillOpacity=".35" stroke="var(--brand)" />
                 <text x={x + 12 + n * 5} y={y + 4}>{ar} ({n})</text>
               </g>
             );

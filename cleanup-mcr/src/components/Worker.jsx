@@ -1,13 +1,23 @@
 import { useState } from 'react';
 import { RATE } from '../constants.js';
 import { aiCompare } from '../api.js';
+import PhotoInput from './PhotoInput.jsx';
+import Pill from './Pill.jsx';
 
 export default function Worker({ task, submit, goBoard }) {
   const [f, setF] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (!task) return <div className="card">You haven't accepted a task yet. Pick one from the task board.</div>;
+  if (!task) return (
+    <div className="narrow">
+      <h1>My jobs</h1>
+      <div className="card">
+        <p>You haven't accepted a task yet. Pick one from the task board.</p>
+        <div className="actions"><button className="b alt" onClick={goBoard}>Go to the task board</button></div>
+      </div>
+    </div>
+  );
 
   if (task.status === 'accepted') {
     const send = async () => {
@@ -19,15 +29,28 @@ export default function Worker({ task, submit, goBoard }) {
       submit(task.id, { after: URL.createObjectURL(f), ai, status: 'review' });
     };
     return (
-      <div className="card">
-        <h2>{task.job}</h2>
-        <p>{task.kind} · {task.area} · <b>£{RATE[task.size].fee}</b> fixed fee</p>
-        {task.before && <img className="ph" src={task.before} alt="Before" />}
-        <p><b>Safety:</b> if you find needles, chemicals, asbestos or anything on the road, stop and report it. Don't touch it.</p>
-        <label htmlFor="af">After photo</label>
-        <input id="af" type="file" accept="image/*" onChange={(e) => setF(e.target.files[0])} />
-        <button className="b" onClick={send}>{busy ? 'Checking photos…' : 'Submit finished job'}</button>
-        <p className="muted">{err}</p>
+      <div className="narrow">
+        <h1>My jobs</h1>
+        <div className="card">
+          <div className="job-head">
+            <h2>{task.job}</h2>
+            <Pill status="accepted" />
+          </div>
+          <p className="muted">{task.kind} · {task.area}</p>
+          <p className="fee">£{RATE[task.size].fee} <span>fixed fee</span></p>
+          {task.before && (
+            <figure>
+              <img className="ph" src={task.before} alt="Before" />
+              <figcaption className="muted">Before</figcaption>
+            </figure>
+          )}
+          <div className="alert"><b>Safety:</b> if you find needles, chemicals, asbestos or anything on the road, stop and report it. Don't touch it.</div>
+          <PhotoInput id="af" label="After photo" file={f} onChange={(e) => setF(e.target.files[0])} />
+          <div className="actions">
+            <button className="b" onClick={send}>{busy ? 'Checking photos…' : 'Submit finished job'}</button>
+          </div>
+          {err && <p className="err">{err}</p>}
+        </div>
       </div>
     );
   }
@@ -38,11 +61,17 @@ export default function Worker({ task, submit, goBoard }) {
     rejected: 'Rejected by the council officer.',
   }[task.status];
   return (
-    <div className="card">
-      <h2>{task.job}</h2>
-      <p>{m}</p>
-      {task.after && <img className="ph" src={task.after} alt="After" />}
-      <button className="b alt" onClick={goBoard}>Back to task board</button>
+    <div className="narrow">
+      <h1>My jobs</h1>
+      <div className="card">
+        <div className="job-head">
+          <h2>{task.job}</h2>
+          <Pill status={task.status} />
+        </div>
+        <p>{m}</p>
+        {task.after && <img className="ph" src={task.after} alt="After" />}
+        <div className="actions"><button className="b alt" onClick={goBoard}>Back to task board</button></div>
+      </div>
     </div>
   );
 }
